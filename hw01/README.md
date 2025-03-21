@@ -21,17 +21,55 @@ This project provides a basic implementation of the Elliptic Curve Digital Signa
 
 ## Files
 
-- **`ecdsa.py`**: Contains the full Python implementation along with basic examples and tests.
-- **`README.md`**: This file, which provides an overview of the project and instructions for use.
+- **`ecdsa.py`**: Contains the full Python implementation.
+- **`tests.py`**: Gives basic examples and tests.
+- **`README.md`**: Provides an overview of the project and instructions for use.
 
-## How to Run
+## How to Run and Usage Examples
 
 1. Ensure you have Python 3 installed on your system.
-2. Run the `ecdsa.py` script:
+2. - **Generate a key pair:**
 
-   ```bash
-   python3 ecdsa.py
-   ```
+      ```bash
+      python3 ecdsa.py generate
+      ```
+
+      *Example output:*
+
+      ```txt
+      Private key (hex): 0x1a2b3c4d5e...
+      Public key (hex): (0x79be667ef9dcbbac..., 0x483ada7726a3c465...)
+      ```
+
+   - **Sign a message:**
+
+      ```bash
+      python3 ecdsa.py sign --message "Hello, ECDSA!" --private 0x1a2b3c4d5e...
+      ```
+
+      *Example output:*
+
+      ```txt
+      Signature (hex): (0xabc123..., 0xdef456...)
+      ```
+
+   - **Verify a signature:**
+
+      ```bash
+      python3 ecdsa.py verify --message "Hello, ECDSA!" --public "0x79be667ef9dcbbac...,0x483ada7726a3c465..." --signature "0xabc123...,0xdef456..."
+      ```
+
+      *Example output:*
+
+      ```txt
+      Signature is valid.
+      ```
+
+3. Run the `tests.py` script:
+
+  ```bash
+  python3 tests.py
+  ```
 
 When executed, the script will:
 

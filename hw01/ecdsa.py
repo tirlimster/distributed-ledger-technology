@@ -1,5 +1,6 @@
 import secrets
 import hashlib
+import argparse
 
 # Domain parameters for secp256k1
 p = 2**256 - 2**32 - 977  # prime modulus of the field
@@ -132,3 +133,80 @@ def verify_signature(message: bytes, public_key: tuple, signature: tuple) -> boo
     x_coord, _ = X
     return (x_coord % n) == r
 
+
+def main():
+    parser = argparse.ArgumentParser(description="ECDSA (secp256k1) - key pair generation, signing, and verification")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # Command: generate
+    subparsers.add_parser("generate", help="Generate an ECDSA key pair")
+
+    # Command: sign
+    parser_sign = subparsers.add_parser("sign", help="Sign a message using the provided private key")
+    parser_sign.add_argument("--message", "-m", type=str, required=True, help="Message to sign")
+    parser_sign.add_argument("--private", "-p", type=str, required=True, help="Private key in hex format")
+
+    # Command: verify
+    parser_verify = subparsers.add_parser("verify", help="Verify a signature given the public key and message")
+    parser_verify.add_argument("--message", "-m", type=str, required=True, help="Message to verify")
+    parser_verify.add_argument(
+        "--public",
+        "-P",
+        type=str,
+        required=True,
+        help='Public key as two hex values separated by a comma (e.g., "0x...,0x...")',
+    )
+    parser_verify.add_argument(
+        "--signature",
+        "-s",
+        type=str,
+        required=True,
+        help='Signature as two hex values separated by a comma (e.g., "0x...,0x...")',
+    )
+
+    args = parser.parse_args()
+
+    if args.command == "generate":
+        priv, pub = generate_key_pair()
+        assert pub is not None, "pub is empty"
+
+        print("Private key (hex):", hex(priv))
+        print("Public key (hex): ({}, {})".format(hex(pub[0]), hex(pub[1])))
+    elif args.command == "sign":
+        msg = args.message.encode("utf-8")
+        try:
+            priv = int(args.private, 16)
+        except ValueError:
+            print("Error: Private key must be a valid hex integer.")
+            return
+        signature = sign_message(msg, priv)
+        print("Signature (hex): ({}, {})".format(hex(signature[0]), hex(signature[1])))
+    elif args.command == "verify":
+        msg = args.message.encode("utf-8")
+        try:
+            pub_parts = args.public.split(",")
+            if len(pub_parts) != 2:
+                raise ValueError
+            pub = (int(pub_parts[0], 16), int(pub_parts[1], 16))
+        except Exception:
+            print("Error: Public key must be provided as two hex values separated by a comma (e.g., '0x...,0x...').")
+            return
+        try:
+            sig_parts = args.signature.split(",")
+            if len(sig_parts) != 2:
+                raise ValueError
+            sig = (int(sig_parts[0], 16), int(sig_parts[1], 16))
+        except Exception:
+            print("Error: Signature must be provided as two hex values separated by a comma (e.g., '0x...,0x...').")
+            return
+        valid = verify_signature(msg, pub, sig)
+        if valid:
+            print("Signature is valid.")
+        else:
+            print("Signature is invalid.")
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()
